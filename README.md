@@ -34,3 +34,219 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+# First Principles Problem Solver API Documentation
+
+This document outlines all the API endpoints available in the First Principles Problem Solver application.
+
+## Problems API
+
+### Get All Problems
+- **Endpoint**: `GET /api/problems`
+- **Description**: Retrieves all problems for the current user
+- **Authentication**: Required
+- **Response**: Array of problem objects with components, fundamental truths, and solutions
+
+### Create New Problem
+- **Endpoint**: `POST /api/problems`
+- **Description**: Creates a new problem
+- **Authentication**: Required
+- **Request Body**: Problem object with title, description, status, category, progress (optional)
+- **Response**: Created problem object
+
+### Get Problem by ID
+- **Endpoint**: `GET /api/problems/[id]`
+- **Description**: Retrieves a specific problem
+- **Authentication**: Required
+- **Response**: Problem object with components, fundamental truths, and solutions
+
+### Update Problem
+- **Endpoint**: `PATCH /api/problems/[id]`
+- **Description**: Updates a problem
+- **Authentication**: Required
+- **Request Body**: Partial problem object with fields to update
+- **Response**: Updated problem object
+
+### Delete Problem
+- **Endpoint**: `DELETE /api/problems/[id]`
+- **Description**: Deletes a problem and all related data
+- **Authentication**: Required
+- **Response**: Success confirmation
+
+## Problem Components API
+
+### Get All Components
+- **Endpoint**: `GET /api/problems/[id]/components`
+- **Description**: Retrieves all components for a problem
+- **Authentication**: Required
+- **Response**: Array of component objects
+
+### Create Component
+- **Endpoint**: `POST /api/problems/[id]/components`
+- **Description**: Creates a new component for a problem
+- **Authentication**: Required
+- **Request Body**: Component with name, description, isCritical (optional)
+- **Response**: Created component object
+
+### Get Component by ID
+- **Endpoint**: `GET /api/problems/[problemId]/components/[id]`
+- **Description**: Retrieves a specific component
+- **Authentication**: Required
+- **Response**: Component object
+
+### Update Component
+- **Endpoint**: `PATCH /api/problems/[problemId]/components/[id]`
+- **Description**: Updates a component
+- **Authentication**: Required
+- **Request Body**: Partial component object with fields to update
+- **Response**: Updated component object
+
+### Delete Component
+- **Endpoint**: `DELETE /api/problems/[problemId]/components/[id]`
+- **Description**: Deletes a component
+- **Authentication**: Required
+- **Response**: Success confirmation
+
+## Fundamental Truths API
+
+### Get All Truths
+- **Endpoint**: `GET /api/problems/[id]/truths`
+- **Description**: Retrieves all fundamental truths for a problem
+- **Authentication**: Required
+- **Response**: Array of truth objects
+
+### Create Truth
+- **Endpoint**: `POST /api/problems/[id]/truths`
+- **Description**: Creates a new fundamental truth for a problem
+- **Authentication**: Required
+- **Request Body**: Truth with truth statement and description
+- **Response**: Created truth object
+
+### Get Truth by ID
+- **Endpoint**: `GET /api/problems/[problemId]/truths/[id]`
+- **Description**: Retrieves a specific fundamental truth
+- **Authentication**: Required
+- **Response**: Truth object
+
+### Update Truth
+- **Endpoint**: `PATCH /api/problems/[problemId]/truths/[id]`
+- **Description**: Updates a fundamental truth
+- **Authentication**: Required
+- **Request Body**: Partial truth object with fields to update
+- **Response**: Updated truth object
+
+### Delete Truth
+- **Endpoint**: `DELETE /api/problems/[problemId]/truths/[id]`
+- **Description**: Deletes a fundamental truth
+- **Authentication**: Required
+- **Response**: Success confirmation
+
+## Solutions API
+
+### Get All Solutions
+- **Endpoint**: `GET /api/problems/[id]/solutions`
+- **Description**: Retrieves all solutions for a problem
+- **Authentication**: Required
+- **Response**: Array of solution objects
+
+### Create Solution
+- **Endpoint**: `POST /api/problems/[id]/solutions`
+- **Description**: Creates a new solution for a problem
+- **Authentication**: Required
+- **Request Body**: Solution with title, description, feasibility, impact, cost, time
+- **Response**: Created solution object
+
+### Get Solution by ID
+- **Endpoint**: `GET /api/problems/[problemId]/solutions/[id]`
+- **Description**: Retrieves a specific solution
+- **Authentication**: Required
+- **Response**: Solution object
+
+### Update Solution
+- **Endpoint**: `PATCH /api/problems/[problemId]/solutions/[id]`
+- **Description**: Updates a solution
+- **Authentication**: Required
+- **Request Body**: Partial solution object with fields to update
+- **Response**: Updated solution object
+
+### Delete Solution
+- **Endpoint**: `DELETE /api/problems/[problemId]/solutions/[id]`
+- **Description**: Deletes a solution
+- **Authentication**: Required
+- **Response**: Success confirmation
+
+## Templates API
+
+### Get All Templates
+- **Endpoint**: `GET /api/templates`
+- **Description**: Retrieves all templates (system templates and user's custom templates)
+- **Authentication**: Optional (required for user templates)
+- **Query Parameters**: type=all|system|user
+- **Response**: Array of template objects
+
+### Create Template
+- **Endpoint**: `POST /api/templates`
+- **Description**: Creates a new custom template
+- **Authentication**: Required
+- **Request Body**: Template with title, description, category, steps
+- **Response**: Created template object
+
+### Get Template by ID
+- **Endpoint**: `GET /api/templates/[id]`
+- **Description**: Retrieves a specific template
+- **Authentication**: Required for user templates, optional for system templates
+- **Response**: Template object
+
+### Update Template
+- **Endpoint**: `PATCH /api/templates/[id]`
+- **Description**: Updates a template
+- **Authentication**: Required
+- **Request Body**: Partial template object with fields to update
+- **Response**: Updated template object
+
+### Delete Template
+- **Endpoint**: `DELETE /api/templates/[id]`
+- **Description**: Deletes a custom template
+- **Authentication**: Required
+- **Response**: Success confirmation
+
+## Dashboard API
+
+### Get Dashboard Data
+- **Endpoint**: `GET /api/dashboard`
+- **Description**: Retrieves dashboard statistics and data
+- **Authentication**: Required
+- **Response**: Dashboard data object with stats, categories, recent problems, and insights
+
+## Problem Progress API
+
+### Get Problem Progress
+- **Endpoint**: `GET /api/problems/[id]/progress`
+- **Description**: Retrieves progress information for a problem
+- **Authentication**: Required
+- **Response**: Progress object with progress percentage and status
+
+### Update Problem Progress
+- **Endpoint**: `PATCH /api/problems/[id]/progress`
+- **Description**: Manually updates progress for a problem
+- **Authentication**: Required
+- **Request Body**: Progress percentage and optional status
+- **Response**: Updated progress object
+
+### Calculate Problem Progress
+- **Endpoint**: `POST /api/problems/[id]/progress`
+- **Description**: Automatically calculates and updates problem progress
+- **Authentication**: Required
+- **Response**: Updated progress object
+
+## Authentication
+
+All endpoints use [Clerk](https://clerk.dev) for authentication. The APIs verify the user's identity and ensure users can only access and modify their own data.
+
+## Error Handling
+
+All APIs follow a consistent error handling pattern:
+- 400 Bad Request: Invalid input data
+- 401 Unauthorized: Missing authentication
+- 403 Forbidden: Not allowed to access resource
+- 404 Not Found: Resource not foun
