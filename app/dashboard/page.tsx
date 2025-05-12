@@ -1,4 +1,6 @@
-// app/dashboard/page.js - Dashboard overview page
+'use client';
+
+import { useEffect, useState } from 'react';
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -15,37 +17,60 @@ import {
   CheckCircle, 
   Clock, 
   Lightbulb,
-  ArrowRight
+  ArrowRight,
+  Loader2
 } from "lucide-react";
+import { useApiContext } from "@/contexts/api-context";
+import { DashboardStats } from "@/types/api";
+import { createErrorHandler, formatDate } from "@/lib/api-utils";
 
 export default function DashboardPage() {
-  // Sample problem data
-  const recentProblems = [
-    {
-      id: "1",
-      title: "Optimize customer acquisition costs",
-      status: "in-progress",
-      createdAt: "2025-05-01",
-      category: "Business",
-      progress: 60,
-    },
-    {
-      id: "2",
-      title: "Reduce manufacturing defect rate",
-      status: "completed",
-      createdAt: "2025-04-28",
-      category: "Operations",
-      progress: 100,
-    },
-    {
-      id: "3",
-      title: "Improve remote team communication",
-      status: "not-started",
-      createdAt: "2025-05-02",
-      category: "Management",
-      progress: 0,
-    },
-  ];
+  const { api, loading } = useApiContext();
+  const [dashboardData, setDashboardData] = useState<DashboardStats | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setIsLoading(true);
+        const data = await api.fetchDashboardData();
+        setDashboardData(data);
+      } catch (error) {
+        createErrorHandler('Failed to load dashboard data')(error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [api]);
+
+  if (isLoading) {
+    return (
+      <div className="container py-10 flex items-center justify-center min-h-[60vh]">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+          <p className="text-muted-foreground">Loading dashboard data...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!dashboardData) {
+    return (
+      <div className="container py-10">
+        <h1 className="text-3xl font-bold tracking-tight mb-8">Dashboard</h1>
+        <Card>
+          <CardContent className="py-8 text-center">
+            <p className="text-muted-foreground mb-4">Failed to load dashboard data</p>
+            <Button onClick={() => window.location.reload()}>Try Again</Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  const { stats, recentProblems, insights } = dashboardData;
 
   return (
     <div className="container py-10">
@@ -58,8 +83,10 @@ export default function DashboardPage() {
             <BarChart className="h-4 w-4 text-gray-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">12</div>
-            <p className="text-xs text-gray-500">+2 from last month</p>
+            <div className="text-2xl font-bold">{stats.totalProblems}</div>
+            <p className="text-xs text-gray-500">
+              {stats.changes.totalFromLastMonth > 0 && '+'}{stats.changes.totalFromLastMonth} from last month
+            </p>
           </CardContent>
         </Card>
         
@@ -69,8 +96,10 @@ export default function DashboardPage() {
             <Activity className="h-4 w-4 text-gray-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">4</div>
-            <p className="text-xs text-gray-500">-1 from last month</p>
+            <div className="text-2xl font-bold">{stats.activeProblems}</div>
+            <p className="text-xs text-gray-500">
+              {stats.changes.activeFromLastMonth > 0 && '+'}{stats.changes.activeFromLastMonth} from last month
+            </p>
           </CardContent>
         </Card>
         
@@ -80,8 +109,10 @@ export default function DashboardPage() {
             <CheckCircle className="h-4 w-4 text-gray-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">7</div>
-            <p className="text-xs text-gray-500">+3 from last month</p>
+            <div className="text-2xl font-bold">{stats.completedProblems}</div>
+            <p className="text-xs text-gray-500">
+              {stats.changes.completedFromLastMonth > 0 && '+'}{stats.changes.completedFromLastMonth} from last month
+            </p>
           </CardContent>
         </Card>
         
@@ -91,8 +122,8 @@ export default function DashboardPage() {
             <Clock className="h-4 w-4 text-gray-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">9.2 days</div>
-            <p className="text-xs text-gray-500">-2.1 days from last month</p>
+            <div className="text-2xl font-bold">{stats.avgSolutionDays} days</div>
+            <p className="text-xs text-gray-500">Based on completed problems</p>
           </CardContent>
         </Card>
       </div>
@@ -107,32 +138,43 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {recentProblems.map((problem) => (
-                <div key={problem.id} className="flex items-center justify-between border-b pb-2">
-                  <div>
-                    <Link href={`/problems/${problem.id}`}>
-                      <h3 className="font-medium hover:text-blue-600 transition-colors">
-                        {problem.title}
-                      </h3>
-                    </Link>
-                    <div className="flex items-center gap-2 text-sm text-gray-500">
-                      <span>{new Date(problem.createdAt).toLocaleDateString()}</span>
-                      <span>•</span>
-                      <span>{problem.category}</span>
+              {recentProblems.length > 0 ? (
+                recentProblems.map((problem) => (
+                  <div key={problem.id} className="flex items-center justify-between border-b pb-2">
+                    <div>
+                      <Link href={`/problems/${problem.id}`}>
+                        <h3 className="font-medium hover:text-blue-600 transition-colors">
+                          {problem.title}
+                        </h3>
+                      </Link>
+                      <div className="flex items-center gap-2 text-sm text-gray-500">
+                        <span>{formatDate(problem.createdAt)}</span>
+                        <span>•</span>
+                        <span>{problem.category}</span>
+                      </div>
                     </div>
+                    <ProblemStatusBadge status={problem.status.toLowerCase()} />
                   </div>
-                  <ProblemStatusBadge status={problem.status} />
+                ))
+              ) : (
+                <div className="text-center py-6 text-muted-foreground">
+                  <p>No problems created yet</p>
+                  <Link href="/problems/new">
+                    <Button variant="link" className="mt-2">Create your first problem</Button>
+                  </Link>
                 </div>
-              ))}
+              )}
             </div>
             
-            <div className="mt-4 pt-4 border-t text-center">
-              <Link href="/problems">
-                <Button variant="ghost" className="gap-2">
-                  View All Problems <ArrowRight className="h-4 w-4" />
-                </Button>
-              </Link>
-            </div>
+            {recentProblems.length > 0 && (
+              <div className="mt-4 pt-4 border-t text-center">
+                <Link href="/problems">
+                  <Button variant="ghost" className="gap-2">
+                    View All Problems <ArrowRight className="h-4 w-4" />
+                  </Button>
+                </Link>
+              </div>
+            )}
           </CardContent>
         </Card>
         
@@ -151,7 +193,7 @@ export default function DashboardPage() {
                 </div>
                 <div>
                   <h3 className="font-medium">Most common cognitive bias</h3>
-                  <p className="text-sm text-gray-500">You tend to rely on confirmation bias in your problem analysis.</p>
+                  <p className="text-sm text-gray-500">{insights.commonCognitiveBias}</p>
                 </div>
               </div>
               
@@ -161,7 +203,7 @@ export default function DashboardPage() {
                 </div>
                 <div>
                   <h3 className="font-medium">Strongest problem category</h3>
-                  <p className="text-sm text-gray-500">You excel at solving operational efficiency problems.</p>
+                  <p className="text-sm text-gray-500">You excel at solving {insights.strongestCategory.toLowerCase()} problems.</p>
                 </div>
               </div>
               
@@ -171,7 +213,7 @@ export default function DashboardPage() {
                 </div>
                 <div>
                   <h3 className="font-medium">First principles progress</h3>
-                  <p className="text-sm text-gray-500">Your last 3 problems showed improved fundamental analysis.</p>
+                  <p className="text-sm text-gray-500">{insights.firstPrinciplesProgress}</p>
                 </div>
               </div>
             </div>

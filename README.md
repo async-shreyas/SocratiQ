@@ -249,4 +249,372 @@ All APIs follow a consistent error handling pattern:
 - 400 Bad Request: Invalid input data
 - 401 Unauthorized: Missing authentication
 - 403 Forbidden: Not allowed to access resource
-- 404 Not Found: Resource not foun
+- 404 Not Found: Resource not found
+- 500 Internal Server Error: Server-side error
+
+## Data Models
+
+### Problem
+```typescript
+{
+  id: string;
+  title: string;
+  description: string;
+  status: 'NOT_STARTED' | 'IN_PROGRESS' | 'COMPLETED';
+  category: string;
+  progress: number; // 0-100
+  userId: string;
+  templateId?: string;
+  components: ProblemComponent[];
+  fundamentalTruths: FundamentalTruth[];
+  solutions: Solution[];
+  createdAt: Date;
+  updatedAt: Date;
+}
+```
+
+### ProblemComponent
+```typescript
+{
+  id: string;
+  name: string;
+  description: string;
+  isCritical: boolean;
+  problemId: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+```
+
+### FundamentalTruth
+```typescript
+{
+  id: string;
+  truth: string;
+  description: string;
+  problemId: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+```
+
+### Solution
+```typescript
+{
+  id: string;
+  title: string;
+  description: string;
+  feasibility: string; // 'low', 'medium', 'high'
+  impact: string; // 'low', 'medium', 'high'
+  cost: string; // 'low', 'medium', 'high'
+  time: string; // 'low', 'medium', 'high'
+  problemId: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+```
+
+### Template
+```typescript
+{
+  id: string;
+  title: string;
+  description: string;
+  category: string;
+  steps: Array<{
+    name: string;
+    description: string;
+    order: number;
+  }>;
+  popularity: number;
+  authorId: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+```
+
+## API Usage Examples
+
+### Creating a New Problem
+
+```javascript
+// Example using fetch API
+const createProblem = async (problemData) => {
+  try {
+    const response = await fetch('/api/problems', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(problemData),
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to create problem');
+    }
+    
+    const newProblem = await response.json();
+    return newProblem;
+  } catch (error) {
+    console.error('Error creating problem:', error);
+    throw error;
+  }
+};
+
+// Example usage
+const problemData = {
+  title: 'Optimize customer acquisition costs',
+  description: 'Our customer acquisition costs have increased by 30% over the last quarter...',
+  status: 'NOT_STARTED',
+  category: 'Business',
+  progress: 0
+};
+
+createProblem(problemData)
+  .then(problem => console.log('Created problem:', problem))
+  .catch(error => console.error(error));
+```
+
+### Breaking Down a Problem into Components
+
+```javascript
+// Add a component to a problem
+const addComponent = async (problemId, componentData) => {
+  try {
+    const response = await fetch(`/api/problems/${problemId}/components`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(componentData),
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to add component');
+    }
+    
+    const newComponent = await response.json();
+    return newComponent;
+  } catch (error) {
+    console.error('Error adding component:', error);
+    throw error;
+  }
+};
+
+// Example usage
+const componentData = {
+  name: 'Marketing channel efficiency',
+  description: 'Different marketing channels have different acquisition costs and conversion rates.',
+  isCritical: true
+};
+
+addComponent('problem-id-here', componentData)
+  .then(component => console.log('Added component:', component))
+  .catch(error => console.error(error));
+```
+
+### Adding a Fundamental Truth
+
+```javascript
+// Add a fundamental truth to a problem
+const addTruth = async (problemId, truthData) => {
+  try {
+    const response = await fetch(`/api/problems/${problemId}/truths`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(truthData),
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to add fundamental truth');
+    }
+    
+    const newTruth = await response.json();
+    return newTruth;
+  } catch (error) {
+    console.error('Error adding fundamental truth:', error);
+    throw error;
+  }
+};
+
+// Example usage
+const truthData = {
+  truth: 'Customer acquisition cost (CAC) must be less than customer lifetime value (LTV)',
+  description: 'This is a basic economic reality that cannot be violated for a sustainable business.'
+};
+
+addTruth('problem-id-here', truthData)
+  .then(truth => console.log('Added truth:', truth))
+  .catch(error => console.error(error));
+```
+
+### Creating and Evaluating a Solution
+
+```javascript
+// Add a solution to a problem
+const addSolution = async (problemId, solutionData) => {
+  try {
+    const response = await fetch(`/api/problems/${problemId}/solutions`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(solutionData),
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to add solution');
+    }
+    
+    const newSolution = await response.json();
+    return newSolution;
+  } catch (error) {
+    console.error('Error adding solution:', error);
+    throw error;
+  }
+};
+
+// Example usage
+const solutionData = {
+  title: 'Customer segmentation & targeted marketing',
+  description: 'Focus marketing efforts on high-value customer segments with better LTV/CAC ratios.',
+  feasibility: 'high',
+  impact: 'high',
+  cost: 'low',
+  time: 'medium'
+};
+
+addSolution('problem-id-here', solutionData)
+  .then(solution => console.log('Added solution:', solution))
+  .catch(error => console.error(error));
+```
+
+### Using Templates
+
+```javascript
+// Get all available templates
+const getTemplates = async () => {
+  try {
+    const response = await fetch('/api/templates');
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to fetch templates');
+    }
+    
+    const templates = await response.json();
+    return templates;
+  } catch (error) {
+    console.error('Error fetching templates:', error);
+    throw error;
+  }
+};
+
+// Create a problem from a template
+const createProblemFromTemplate = async (problemData, templateId) => {
+  try {
+    const data = {
+      ...problemData,
+      templateId
+    };
+    
+    const response = await fetch('/api/problems', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to create problem from template');
+    }
+    
+    const newProblem = await response.json();
+    return newProblem;
+  } catch (error) {
+    console.error('Error creating problem from template:', error);
+    throw error;
+  }
+};
+
+// Example usage
+getTemplates()
+  .then(templates => {
+    // Find a suitable template
+    const template = templates.find(t => t.title === '5 Whys Root Cause Analysis');
+    
+    if (template) {
+      const problemData = {
+        title: 'Reduce manufacturing defect rate',
+        description: 'Our manufacturing defect rate has increased by 15% in the last quarter.',
+        status: 'NOT_STARTED',
+        category: 'Operations',
+        progress: 0
+      };
+      
+      return createProblemFromTemplate(problemData, template.id);
+    }
+  })
+  .then(problem => console.log('Created problem from template:', problem))
+  .catch(error => console.error(error));
+```
+
+### Getting Dashboard Data
+
+```javascript
+// Fetch dashboard data
+const getDashboardData = async () => {
+  try {
+    const response = await fetch('/api/dashboard');
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to fetch dashboard data');
+    }
+    
+    const dashboardData = await response.json();
+    return dashboardData;
+  } catch (error) {
+    console.error('Error fetching dashboard data:', error);
+    throw error;
+  }
+};
+
+// Example usage
+getDashboardData()
+  .then(data => {
+    console.log('Total problems:', data.stats.totalProblems);
+    console.log('Active problems:', data.stats.activeProblems);
+    console.log('Completed problems:', data.stats.completedProblems);
+    console.log('Average solution time:', data.stats.avgSolutionDays, 'days');
+    console.log('Recent problems:', data.recentProblems);
+    console.log('Insights:', data.insights);
+  })
+  .catch(error => console.error(error));
+```
+
+## Implementation Notes
+
+1. **Progress Tracking**: Problem progress is automatically calculated when components, truths, or solutions are added/removed.
+
+2. **Authentication**: All requests require authentication via Clerk except for retrieving system templates.
+
+3. **Optimistic Updates**: Frontend implementation should use optimistic updates for better user experience.
+
+4. **Error Handling**: Always check response status and handle errors appropriately.
+
+5. **Rate Limiting**: API endpoints have rate limiting to prevent abuse.
+
+6. **CORS Protection**: Only requests from the same origin are allowed.
+
+7. **Data Validation**: All input data is validated using Zod schemas.
+
+8. **Performance**: The Prisma client is instantiated as a singleton to avoid connection pool issues.
