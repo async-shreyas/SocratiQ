@@ -1,9 +1,14 @@
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 
-export function MainNav({ className, ...props }) {
+interface MainNavProps {
+  className?: string;
+  [key: string]: any;
+}
+
+export function MainNav({ className, ...props }: MainNavProps) {
   return (
-    <div className="flex gap-6 md:gap-10">
+    <div className={cn("flex gap-6 md:gap-10", className)} {...props}>
       <Link href="/" className="flex items-center space-x-2">
         <span className="font-bold text-xl">SocratiQ</span>
       </Link>
@@ -33,8 +38,6 @@ export function MainNav({ className, ...props }) {
           Templates
         </Link>
       </nav>
-
-      
     </div>
   );
 }

@@ -1,23 +1,17 @@
-// app/api/problems/[problemId]/solutions/[id]/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
-import { z } from 'zod';
+import { solutionSchema } from '@/validators/problem';
 import prisma from '@/lib/prisma';
+import { handleApiError } from '@/lib/api-utils';
+import { updateProblemProgress } from '@/lib/problem-utils';
 
-// Solution schema for validation
-const solutionSchema = z.object({
-  title: z.string().min(1, 'Title is required'),
-  description: z.string().min(1, 'Description is required'),
-  feasibility: z.string().min(1, 'Feasibility rating is required'),
-  impact: z.string().min(1, 'Impact rating is required'),
-  cost: z.string().min(1, 'Cost rating is required'),
-  time: z.string().min(1, 'Time rating is required')
-});
-
-// Get a specific solution
+/**
+ * GET /api/problems/[id]/solutions/[solutionId]
+ * Get a specific solution
+ */
 export async function GET(
   req: NextRequest,
-  { params }: { params: { problemId: string, solutionId: string } }
+  { params }: { params: { id: string, solutionId: string } }
 ) {
   try {
     const { userId } = await auth();
@@ -31,7 +25,10 @@ export async function GET(
 
     // Verify problem exists and belongs to user
     const problem = await prisma.problem.findUnique({
-      where: { id: params.problemId }
+      where: { 
+        id: params.id,
+        userId
+      }
     });
 
     if (!problem) {
@@ -41,17 +38,10 @@ export async function GET(
       );
     }
 
-    if (problem.userId !== userId) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 403 }
-      );
-    }
-
     const solution = await prisma.solution.findFirst({
       where: {
         id: params.solutionId,
-        problemId: params.problemId
+        problemId: params.id
       }
     });
 
@@ -64,18 +54,17 @@ export async function GET(
 
     return NextResponse.json(solution);
   } catch (error) {
-    console.error('Error fetching solution:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch solution' },
-      { status: 500 }
-    );
+    return handleApiError(error, 'Failed to fetch solution');
   }
 }
 
-// Update a solution
+/**
+ * PATCH /api/problems/[id]/solutions/[solutionId]
+ * Update a solution
+ */
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { problemId: string, solutionId: string } }
+  { params }: { params: { id: string, solutionId: string } }
 ) {
   try {
     const { userId } = await auth();
@@ -89,7 +78,10 @@ export async function PATCH(
 
     // Verify problem exists and belongs to user
     const problem = await prisma.problem.findUnique({
-      where: { id: params.problemId }
+      where: { 
+        id: params.id,
+        userId
+      }
     });
 
     if (!problem) {
@@ -99,18 +91,11 @@ export async function PATCH(
       );
     }
 
-    if (problem.userId !== userId) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 403 }
-      );
-    }
-
     // Check if solution exists
     const existingSolution = await prisma.solution.findFirst({
       where: {
         id: params.solutionId,
-        problemId: params.problemId
+        problemId: params.id
       }
     });
 
@@ -138,18 +123,17 @@ export async function PATCH(
 
     return NextResponse.json(updatedSolution);
   } catch (error) {
-    console.error('Error updating solution:', error);
-    return NextResponse.json(
-      { error: 'Failed to update solution' },
-      { status: 500 }
-    );
+    return handleApiError(error, 'Failed to update solution');
   }
 }
 
-// Delete a solution
+/**
+ * DELETE /api/problems/[id]/solutions/[solutionId]
+ * Delete a solution
+ */
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { problemId: string, solutionId: string } }
+  { params }: { params: { id: string, solutionId: string } }
 ) {
   try {
     const { userId } = await auth();
@@ -163,7 +147,10 @@ export async function DELETE(
 
     // Verify problem exists and belongs to user
     const problem = await prisma.problem.findUnique({
-      where: { id: params.problemId }
+      where: { 
+        id: params.id,
+        userId
+      }
     });
 
     if (!problem) {
@@ -173,18 +160,11 @@ export async function DELETE(
       );
     }
 
-    if (problem.userId !== userId) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 403 }
-      );
-    }
-
     // Check if solution exists
     const existingSolution = await prisma.solution.findFirst({
       where: {
         id: params.solutionId,
-        problemId: params.problemId
+        problemId: params.id
       }
     });
 
@@ -200,53 +180,10 @@ export async function DELETE(
     });
 
     // Update problem progress
-    await updateProblemProgress(params.problemId);
+    await updateProblemProgress(params.id);
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('Error deleting solution:', error);
-    return NextResponse.json(
-      { error: 'Failed to delete solution' },
-      { status: 500 }
-    );
-  }
-}
-
-// Helper function to update problem progress
-async function updateProblemProgress(problemId: string) {
-  try {
-    const [components, truths, solutions] = await Promise.all([
-      prisma.problemComponent.count({ where: { problemId } }),
-      prisma.fundamentalTruth.count({ where: { problemId } }),
-      prisma.solution.count({ where: { problemId } })
-    ]);
-    
-    // Calculate progress (simple algorithm, adjust as needed)
-    let progress = 0;
-    
-    if (components > 0) progress += 30;
-    if (truths > 0) progress += 30;
-    if (solutions > 0) progress += 30;
-    
-    // Cap at 100
-    progress = Math.min(progress, 100);
-    
-    // Update status based on progress
-    let status = 'NOT_STARTED';
-    if (progress >= 100) {
-      status = 'COMPLETED';
-    } else if (progress > 0) {
-      status = 'IN_PROGRESS';
-    }
-    
-    await prisma.problem.update({
-      where: { id: problemId },
-      data: { 
-        progress, 
-        status: status as 'NOT_STARTED' | 'IN_PROGRESS' | 'COMPLETED'
-      }
-    });
-  } catch (error) {
-    console.error('Error updating problem progress:', error);
+    return handleApiError(error, 'Failed to delete solution');
   }
 }

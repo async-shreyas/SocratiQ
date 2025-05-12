@@ -1,4 +1,3 @@
-// contexts/api-context.tsx
 'use client';
 
 import { createContext, useContext, ReactNode } from 'react';
@@ -13,7 +12,11 @@ interface ApiContextType {
 
 const ApiContext = createContext<ApiContextType | undefined>(undefined);
 
-export function ApiProvider({ children }: { children: ReactNode }) {
+interface ApiProviderProps {
+  children: ReactNode;
+}
+
+export function ApiProvider({ children }: ApiProviderProps) {
   const api = useApi();
 
   const value = {

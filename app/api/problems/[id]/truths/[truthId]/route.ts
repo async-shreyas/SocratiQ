@@ -1,19 +1,17 @@
-// app/api/problems/[problemId]/truths/[id]/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
-import { z } from 'zod';
+import { fundamentalTruthSchema } from '@/validators/problem';
 import prisma from '@/lib/prisma';
+import { handleApiError } from '@/lib/api-utils';
+import { updateProblemProgress } from '@/lib/problem-utils';
 
-// Truth schema for validation
-const truthSchema = z.object({
-  truth: z.string().min(1, 'Truth statement is required'),
-  description: z.string().min(1, 'Description is required')
-});
-
-// Get a specific fundamental truth
+/**
+ * GET /api/problems/[id]/truths/[truthId]
+ * Get a specific fundamental truth
+ */
 export async function GET(
   req: NextRequest,
-  { params }: { params: { problemId: string, truthId: string } }
+  { params }: { params: { id: string, truthId: string } }
 ) {
   try {
     const { userId } = await auth();
@@ -27,7 +25,10 @@ export async function GET(
 
     // Verify problem exists and belongs to user
     const problem = await prisma.problem.findUnique({
-      where: { id: params.problemId }
+      where: { 
+        id: params.id,
+        userId
+      }
     });
 
     if (!problem) {
@@ -37,17 +38,10 @@ export async function GET(
       );
     }
 
-    if (problem.userId !== userId) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 403 }
-      );
-    }
-
     const truth = await prisma.fundamentalTruth.findFirst({
       where: {
         id: params.truthId,
-        problemId: params.problemId
+        problemId: params.id
       }
     });
 
@@ -60,18 +54,17 @@ export async function GET(
 
     return NextResponse.json(truth);
   } catch (error) {
-    console.error('Error fetching fundamental truth:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch fundamental truth' },
-      { status: 500 }
-    );
+    return handleApiError(error, 'Failed to fetch fundamental truth');
   }
 }
 
-// Update a fundamental truth
+/**
+ * PATCH /api/problems/[id]/truths/[truthId]
+ * Update a fundamental truth
+ */
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { problemId: string, truthId: string } }
+  { params }: { params: { id: string, truthId: string } }
 ) {
   try {
     const { userId } = await auth();
@@ -85,7 +78,10 @@ export async function PATCH(
 
     // Verify problem exists and belongs to user
     const problem = await prisma.problem.findUnique({
-      where: { id: params.problemId }
+      where: { 
+        id: params.id,
+        userId
+      }
     });
 
     if (!problem) {
@@ -95,18 +91,11 @@ export async function PATCH(
       );
     }
 
-    if (problem.userId !== userId) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 403 }
-      );
-    }
-
     // Check if truth exists
     const existingTruth = await prisma.fundamentalTruth.findFirst({
       where: {
         id: params.truthId,
-        problemId: params.problemId
+        problemId: params.id
       }
     });
 
@@ -118,7 +107,7 @@ export async function PATCH(
     }
 
     const body = await req.json();
-    const validation = truthSchema.partial().safeParse(body);
+    const validation = fundamentalTruthSchema.partial().safeParse(body);
     
     if (!validation.success) {
       return NextResponse.json(
@@ -134,18 +123,17 @@ export async function PATCH(
 
     return NextResponse.json(updatedTruth);
   } catch (error) {
-    console.error('Error updating fundamental truth:', error);
-    return NextResponse.json(
-      { error: 'Failed to update fundamental truth' },
-      { status: 500 }
-    );
+    return handleApiError(error, 'Failed to update fundamental truth');
   }
 }
 
-// Delete a fundamental truth
+/**
+ * DELETE /api/problems/[id]/truths/[truthId]
+ * Delete a fundamental truth
+ */
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { problemId: string, truthId: string } }
+  { params }: { params: { id: string, truthId: string } }
 ) {
   try {
     const { userId } = await auth();
@@ -159,7 +147,10 @@ export async function DELETE(
 
     // Verify problem exists and belongs to user
     const problem = await prisma.problem.findUnique({
-      where: { id: params.problemId }
+      where: { 
+        id: params.id,
+        userId
+      }
     });
 
     if (!problem) {
@@ -169,18 +160,11 @@ export async function DELETE(
       );
     }
 
-    if (problem.userId !== userId) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 403 }
-      );
-    }
-
     // Check if truth exists
     const existingTruth = await prisma.fundamentalTruth.findFirst({
       where: {
         id: params.truthId,
-        problemId: params.problemId
+        problemId: params.id
       }
     });
 
@@ -196,53 +180,10 @@ export async function DELETE(
     });
 
     // Update problem progress
-    await updateProblemProgress(params.problemId);
+    await updateProblemProgress(params.id);
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('Error deleting fundamental truth:', error);
-    return NextResponse.json(
-      { error: 'Failed to delete fundamental truth' },
-      { status: 500 }
-    );
-  }
-}
-
-// Helper function to update problem progress
-async function updateProblemProgress(problemId: string) {
-  try {
-    const [components, truths, solutions] = await Promise.all([
-      prisma.problemComponent.count({ where: { problemId } }),
-      prisma.fundamentalTruth.count({ where: { problemId } }),
-      prisma.solution.count({ where: { problemId } })
-    ]);
-    
-    // Calculate progress (simple algorithm, adjust as needed)
-    let progress = 0;
-    
-    if (components > 0) progress += 30;
-    if (truths > 0) progress += 30;
-    if (solutions > 0) progress += 30;
-    
-    // Cap at 100
-    progress = Math.min(progress, 100);
-    
-    // Update status based on progress
-    let status = 'NOT_STARTED';
-    if (progress >= 100) {
-      status = 'COMPLETED';
-    } else if (progress > 0) {
-      status = 'IN_PROGRESS';
-    }
-    
-    await prisma.problem.update({
-      where: { id: problemId },
-      data: { 
-        progress, 
-        status: status as 'NOT_STARTED' | 'IN_PROGRESS' | 'COMPLETED'
-      }
-    });
-  } catch (error) {
-    console.error('Error updating problem progress:', error);
+    return handleApiError(error, 'Failed to delete fundamental truth');
   }
 }

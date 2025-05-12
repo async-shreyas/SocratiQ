@@ -1,10 +1,13 @@
-// app/api/problems/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import { problemSchema } from '@/validators/problem';
 import { auth } from '@clerk/nextjs/server';
+import { problemSchema } from '@/validators/problem';
 import prisma from '@/lib/prisma';
+import { handleApiError } from '@/lib/api-utils';
 
-// Get all problems for the current user
+/**
+ * GET /api/problems
+ * Get all problems for the current user
+ */
 export async function GET(req: NextRequest) {
   try {
     const { userId } = await auth();
@@ -17,30 +20,25 @@ export async function GET(req: NextRequest) {
     }
 
     const problems = await prisma.problem.findMany({
-      where: {
-        userId: userId
-      },
+      where: { userId },
       include: {
         components: true,
         fundamentalTruths: true,
         solutions: true
       },
-      orderBy: {
-        updatedAt: 'desc'
-      }
+      orderBy: { updatedAt: 'desc' }
     });
 
     return NextResponse.json(problems);
   } catch (error) {
-    console.error('Error fetching problems:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch problems' },
-      { status: 500 }
-    );
+    return handleApiError(error, 'Failed to fetch problems');
   }
 }
 
-// Create a new problem
+/**
+ * POST /api/problems
+ * Create a new problem
+ */
 export async function POST(req: NextRequest) {
   try {
     const { userId } = await auth();
@@ -76,10 +74,6 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json(problem, { status: 201 });
   } catch (error) {
-    console.error('Error creating problem:', error);
-    return NextResponse.json(
-      { error: 'Failed to create problem' },
-      { status: 500 }
-    );
+    return handleApiError(error, 'Failed to create problem');
   }
 }

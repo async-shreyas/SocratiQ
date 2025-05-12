@@ -1,7 +1,7 @@
-// app/api/dashboard/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import prisma from '@/lib/prisma';
+import { handleApiError } from '@/lib/api-utils';
 
 // Get dashboard statistics
 export async function GET(req: NextRequest) {
@@ -30,11 +30,6 @@ export async function GET(req: NextRequest) {
       orderBy: { updatedAt: 'desc' }
     });
 
-    // Get problems created in the past month
-    // const recentProblems = problems.filter(
-    //   (problem) => new Date(problem.createdAt) >= oneMonthAgo
-    // );
-
     // Get category count
     const categories = problems.reduce((acc, problem) => {
       acc[problem.category] = (acc[problem.category] || 0) + 1;
@@ -56,11 +51,6 @@ export async function GET(req: NextRequest) {
       }, 0);
       avgSolutionDays = totalDays / completedProblems.length;
     }
-
-    // Calculate stats from the previous month for comparison
-    // const previousMonthCompletedCount = completedProblems.filter(
-    //   (problem) => new Date(problem.updatedAt) >= oneMonthAgo
-    // ).length;
 
     // Count problems by status
     const totalProblems = problems.length;
@@ -123,21 +113,14 @@ export async function GET(req: NextRequest) {
       insights
     });
   } catch (error) {
-    console.error('Error fetching dashboard data:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch dashboard data' },
-      { status: 500 }
-    );
+    return handleApiError(error, 'Failed to fetch dashboard data');
   }
 }
 
 // Helper function to calculate user insights
-function calculateUserInsights(problems) {
-  // This is just an example - you would implement more sophisticated
-  // analysis in a real application
-  
+function calculateUserInsights(problems: any[]) {
   // Find most common category
-  const categoryCount = {};
+  const categoryCount: Record<string, number> = {};
   problems.forEach(problem => {
     categoryCount[problem.category] = (categoryCount[problem.category] || 0) + 1;
   });

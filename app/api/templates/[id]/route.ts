@@ -1,8 +1,8 @@
-// app/api/templates/[id]/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { z } from 'zod';
 import prisma from '@/lib/prisma';
+import { handleApiError } from '@/lib/api-utils';
 
 // Template schema for validation
 const templateSchema = z.object({
@@ -16,7 +16,10 @@ const templateSchema = z.object({
   })).min(1, 'At least one step is required')
 });
 
-// Get a specific template
+/**
+ * GET /api/templates/[id]
+ * Get a specific template
+ */
 export async function GET(
   req: NextRequest,
   { params }: { params: { id: string } }
@@ -53,15 +56,14 @@ export async function GET(
 
     return NextResponse.json(template);
   } catch (error) {
-    console.error('Error fetching template:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch template' },
-      { status: 500 }
-    );
+    return handleApiError(error, 'Failed to fetch template');
   }
 }
 
-// Update a template
+/**
+ * PATCH /api/templates/[id]
+ * Update a template
+ */
 export async function PATCH(
   req: NextRequest,
   { params }: { params: { id: string } }
@@ -116,7 +118,10 @@ export async function PATCH(
     // Prepare the data for update
     const updateData = { ...validation.data };
     
-    // Steps array is already in the correct format, no conversion needed
+    // If steps are included, convert to JSON string
+    if (updateData.steps) {
+      updateData.steps = JSON.stringify(updateData.steps);
+    }
 
     const updatedTemplate = await prisma.template.update({
       where: { id: params.id },
@@ -125,15 +130,14 @@ export async function PATCH(
 
     return NextResponse.json(updatedTemplate);
   } catch (error) {
-    console.error('Error updating template:', error);
-    return NextResponse.json(
-      { error: 'Failed to update template' },
-      { status: 500 }
-    );
+    return handleApiError(error, 'Failed to update template');
   }
 }
 
-// Delete a template
+/**
+ * DELETE /api/templates/[id]
+ * Delete a template
+ */
 export async function DELETE(
   req: NextRequest,
   { params }: { params: { id: string } }
@@ -193,10 +197,6 @@ export async function DELETE(
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('Error deleting template:', error);
-    return NextResponse.json(
-      { error: 'Failed to delete template' },
-      { status: 500 }
-    );
+    return handleApiError(error, 'Failed to delete template');
   }
 }

@@ -1,7 +1,15 @@
 import { Badge } from "@/components/ui/badge";
 
-export function ProblemStatusBadge({ status }) {
-  const statusConfig = {
+interface ProblemStatusBadgeProps {
+  status: string;
+}
+
+export function ProblemStatusBadge({ status }: ProblemStatusBadgeProps) {
+  const statusConfig: Record<string, {
+    label: string;
+    variant: "outline";
+    className: string;
+  }> = {
     "not-started": {
       label: "Not Started",
       variant: "outline",

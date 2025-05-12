@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
-import { Trash2, Plus, ArrowRight, ThumbsUp, ThumbsDown } from "lucide-react";
+import { ArrowRight, ThumbsUp, ThumbsDown } from "lucide-react";
 import {
   Tabs,
   TabsContent,
@@ -25,22 +25,41 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useApiContext } from "@/contexts/api-context";
+import { createErrorHandler } from "@/lib/api-utils";
+import { useEffect, useState } from "react";
+import { Problem } from "@/types/api";
 
 export default function ProblemSolutionsPage({ params }) {
   const problemId = params.id;
+  const {api} = useApiContext();
+  const [problem, setProblem] = useState<Problem | null>(null);
+  const [loading, setLoading] = useState(true);
   
-  // In a real app, we would fetch the problem data using the ID
-  const problem = {
-    id: problemId,
-    title: "Optimize customer acquisition costs",
-    description: "Our customer acquisition costs have increased by 30% over the last quarter while conversion rates remain unchanged. We need to find ways to efficiently acquire new customers without increasing our marketing budget.",
-  };
+  useEffect(() => {
+      const fetchData = async () => {
+        try {
+          setLoading(true);
+          
+          // Fetch problem details
+          const problemData = await api.fetchProblem(problemId);
+          setProblem(problemData);
+          
+        } catch (error) {
+          createErrorHandler('Failed to load problem data')(error);
+        } finally {
+          setLoading(false);
+        }
+      };
+      
+      fetchData();
+    }, [problemId, api]);
 
   return (
     <div className="container max-w-4xl py-10">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold tracking-tight mb-2">{problem.title}</h1>
-        <p className="text-gray-600">{problem.description}</p>
+        <h1 className="text-3xl font-bold tracking-tight mb-2">{problem?.title}</h1>
+        <p className="text-gray-600">{problem?.description}</p>
       </div>
       
       <Tabs defaultValue="generate">

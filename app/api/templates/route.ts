@@ -1,8 +1,8 @@
-// app/api/templates/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { z } from 'zod';
 import prisma from '@/lib/prisma';
+import { handleApiError } from '@/lib/api-utils';
 
 // Template schema for validation
 const templateSchema = z.object({
@@ -16,13 +16,16 @@ const templateSchema = z.object({
   })).min(1, 'At least one step is required')
 });
 
-// Get all templates (both system templates and user's custom templates)
+/**
+ * GET /api/templates
+ * Get all templates (both system templates and user's custom templates)
+ */
 export async function GET(req: NextRequest) {
   try {
     const { userId } = await auth();
     
     // For templates, we'll allow unauthenticated access to system templates
-    // but require await auth for user templates
+    // but require auth for user templates
     const searchParams = req.nextUrl.searchParams;
     const type = searchParams.get('type') || 'all'; // 'all', 'system', 'user'
     
@@ -48,15 +51,14 @@ export async function GET(req: NextRequest) {
     
     return NextResponse.json(templates);
   } catch (error) {
-    console.error('Error fetching templates:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch templates' },
-      { status: 500 }
-    );
+    return handleApiError(error, 'Failed to fetch templates');
   }
 }
 
-// Create a new template
+/**
+ * POST /api/templates
+ * Create a new template
+ */
 export async function POST(req: NextRequest) {
   try {
     const { userId } = await auth();
@@ -91,10 +93,6 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json(template, { status: 201 });
   } catch (error) {
-    console.error('Error creating template:', error);
-    return NextResponse.json(
-      { error: 'Failed to create template' },
-      { status: 500 }
-    );
+    return handleApiError(error, 'Failed to create template');
   }
 }
