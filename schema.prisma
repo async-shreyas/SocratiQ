@@ -8,86 +8,88 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model User {
+  id               String     @id @default(uuid())
+  email            String     @unique
+  name             String?
+  password         String
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
+  resetToken       String?
+  resetTokenExpiry DateTime?
+  problems         Problem[]
+  templates        Template[]
+}
+
+model Problem {
+  id                String             @id @default(uuid())
+  title             String
+  description       String
+  status            ProblemStatus
+  category          String
+  progress          Int                @default(0)
+  userId            String
+  templateId        String?
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  fundamentalTruths FundamentalTruth[]
+  template          Template?          @relation(fields: [templateId], references: [id])
+  user              User               @relation(fields: [userId], references: [id])
+  components        ProblemComponent[]
+  solutions         Solution[]
+}
+
+model Template {
+  id          String    @id @default(uuid())
+  title       String
+  description String
+  category    String
+  steps       Json
+  popularity  Int       @default(0)
+  authorId    String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  problems    Problem[]
+  author      User      @relation(fields: [authorId], references: [id])
+}
+
+model ProblemComponent {
+  id          String   @id @default(uuid())
+  name        String
+  description String
+  isCritical  Boolean  @default(false)
+  problemId   String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  problem     Problem  @relation(fields: [problemId], references: [id])
+}
+
+model FundamentalTruth {
+  id          String   @id @default(uuid())
+  truth       String
+  description String
+  problemId   String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  problem     Problem  @relation(fields: [problemId], references: [id])
+}
+
+model Solution {
+  id          String   @id @default(uuid())
+  title       String
+  description String
+  feasibility String
+  impact      String
+  cost        String
+  time        String
+  problemId   String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  problem     Problem  @relation(fields: [problemId], references: [id])
+}
+
 enum ProblemStatus {
   NOT_STARTED
   IN_PROGRESS
   COMPLETED
-}
-
-model User {
-  id            String         @id @default(uuid())
-  email         String         @unique
-  name          String?
-  password      String
-  problems      Problem[]
-  templates     Template[]
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
-}
-
-model Problem {
-  id              String         @id @default(uuid())
-  title           String
-  description     String
-  status          ProblemStatus
-  category        String
-  progress        Int            @default(0)
-  userId          String
-  templateId      String?
-  components      ProblemComponent[]
-  fundamentalTruths FundamentalTruth[]
-  solutions       Solution[]
-  createdAt       DateTime       @default(now())
-  updatedAt       DateTime       @updatedAt
-  user            User           @relation(fields: [userId], references: [id])
-  template        Template?      @relation(fields: [templateId], references: [id])
-}
-
-model Template {
-  id              String         @id @default(uuid())
-  title           String
-  description     String
-  category        String
-  steps           Json
-  popularity      Int            @default(0)
-  authorId        String
-  createdAt       DateTime       @default(now())
-  updatedAt       DateTime       @updatedAt
-  author          User           @relation(fields: [authorId], references: [id])
-  problems        Problem[]
-}
-
-model ProblemComponent {
-  id              String         @id @default(uuid())
-  name            String
-  description     String
-  isCritical      Boolean        @default(false)
-  problemId       String
-  problem         Problem        @relation(fields: [problemId], references: [id])
-  createdAt       DateTime       @default(now())
-  updatedAt       DateTime       @updatedAt
-}
-
-model FundamentalTruth {
-  id              String         @id @default(uuid())
-  truth           String
-  description     String
-  problemId       String
-  problem         Problem        @relation(fields: [problemId], references: [id])
-  createdAt       DateTime       @default(now())
-  updatedAt       DateTime       @updatedAt
-}
-
-model Solution {
-  id              String         @id @default(uuid())
-  title           String
-  description     String
-  feasibility     String
-  impact          String
-  cost            String
-  time            String
-  problemId       String
-  problem         Problem        @relation(fields: [problemId], references: [id])
-  createdAt       DateTime       @default(now())
-  updatedAt       DateTime       @updatedAt
 }
