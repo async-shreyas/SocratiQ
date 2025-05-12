@@ -1,23 +1,19 @@
-// app/api/problems/[problemId]/solutions/[id]/route.ts
+// app/api/problems/[problemId]/truths/[id]/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { z } from 'zod';
 import prisma from '@/lib/prisma';
 
-// Solution schema for validation
-const solutionSchema = z.object({
-  title: z.string().min(1, 'Title is required'),
-  description: z.string().min(1, 'Description is required'),
-  feasibility: z.string().min(1, 'Feasibility rating is required'),
-  impact: z.string().min(1, 'Impact rating is required'),
-  cost: z.string().min(1, 'Cost rating is required'),
-  time: z.string().min(1, 'Time rating is required')
+// Truth schema for validation
+const truthSchema = z.object({
+  truth: z.string().min(1, 'Truth statement is required'),
+  description: z.string().min(1, 'Description is required')
 });
 
-// Get a specific solution
+// Get a specific fundamental truth
 export async function GET(
   req: NextRequest,
-  { params }: { params: { problemId: string, id: string } }
+  { params }: { params: { problemId: string, truthId: string } }
 ) {
   try {
     const { userId } = await auth();
@@ -48,34 +44,34 @@ export async function GET(
       );
     }
 
-    const solution = await prisma.solution.findFirst({
+    const truth = await prisma.fundamentalTruth.findFirst({
       where: {
-        id: params.id,
+        id: params.truthId,
         problemId: params.problemId
       }
     });
 
-    if (!solution) {
+    if (!truth) {
       return NextResponse.json(
-        { error: 'Solution not found' },
+        { error: 'Fundamental truth not found' },
         { status: 404 }
       );
     }
 
-    return NextResponse.json(solution);
+    return NextResponse.json(truth);
   } catch (error) {
-    console.error('Error fetching solution:', error);
+    console.error('Error fetching fundamental truth:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch solution' },
+      { error: 'Failed to fetch fundamental truth' },
       { status: 500 }
     );
   }
 }
 
-// Update a solution
+// Update a fundamental truth
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { problemId: string, id: string } }
+  { params }: { params: { problemId: string, truthId: string } }
 ) {
   try {
     const { userId } = await auth();
@@ -106,23 +102,23 @@ export async function PATCH(
       );
     }
 
-    // Check if solution exists
-    const existingSolution = await prisma.solution.findFirst({
+    // Check if truth exists
+    const existingTruth = await prisma.fundamentalTruth.findFirst({
       where: {
-        id: params.id,
+        id: params.truthId,
         problemId: params.problemId
       }
     });
 
-    if (!existingSolution) {
+    if (!existingTruth) {
       return NextResponse.json(
-        { error: 'Solution not found' },
+        { error: 'Fundamental truth not found' },
         { status: 404 }
       );
     }
 
     const body = await req.json();
-    const validation = solutionSchema.partial().safeParse(body);
+    const validation = truthSchema.partial().safeParse(body);
     
     if (!validation.success) {
       return NextResponse.json(
@@ -131,25 +127,25 @@ export async function PATCH(
       );
     }
 
-    const updatedSolution = await prisma.solution.update({
-      where: { id: params.id },
+    const updatedTruth = await prisma.fundamentalTruth.update({
+      where: { id: params.truthId },
       data: validation.data
     });
 
-    return NextResponse.json(updatedSolution);
+    return NextResponse.json(updatedTruth);
   } catch (error) {
-    console.error('Error updating solution:', error);
+    console.error('Error updating fundamental truth:', error);
     return NextResponse.json(
-      { error: 'Failed to update solution' },
+      { error: 'Failed to update fundamental truth' },
       { status: 500 }
     );
   }
 }
 
-// Delete a solution
+// Delete a fundamental truth
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { problemId: string, id: string } }
+  { params }: { params: { problemId: string, truthId: string } }
 ) {
   try {
     const { userId } = await auth();
@@ -180,23 +176,23 @@ export async function DELETE(
       );
     }
 
-    // Check if solution exists
-    const existingSolution = await prisma.solution.findFirst({
+    // Check if truth exists
+    const existingTruth = await prisma.fundamentalTruth.findFirst({
       where: {
-        id: params.id,
+        id: params.truthId,
         problemId: params.problemId
       }
     });
 
-    if (!existingSolution) {
+    if (!existingTruth) {
       return NextResponse.json(
-        { error: 'Solution not found' },
+        { error: 'Fundamental truth not found' },
         { status: 404 }
       );
     }
 
-    await prisma.solution.delete({
-      where: { id: params.id }
+    await prisma.fundamentalTruth.delete({
+      where: { id: params.truthId }
     });
 
     // Update problem progress
@@ -204,9 +200,9 @@ export async function DELETE(
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('Error deleting solution:', error);
+    console.error('Error deleting fundamental truth:', error);
     return NextResponse.json(
-      { error: 'Failed to delete solution' },
+      { error: 'Failed to delete fundamental truth' },
       { status: 500 }
     );
   }

@@ -221,7 +221,7 @@ export default function TemplatesPage() {
           <div>
             <h2 className="text-2xl font-bold">Your Custom Templates</h2>
             <p className="text-muted-foreground">
-              Templates you've created or modified
+              Templates you&apos;ve created or modified
             </p>
           </div>
         </div>

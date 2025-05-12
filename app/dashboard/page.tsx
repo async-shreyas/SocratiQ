@@ -25,7 +25,7 @@ import { DashboardStats } from "@/types/api";
 import { createErrorHandler, formatDate } from "@/lib/api-utils";
 
 export default function DashboardPage() {
-  const { api, loading } = useApiContext();
+  const { api } = useApiContext();
   const [dashboardData, setDashboardData] = useState<DashboardStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 

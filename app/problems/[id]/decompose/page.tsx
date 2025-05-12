@@ -9,14 +9,13 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import { Trash2, Plus, ArrowRight, Loader2 } from "lucide-react";
-import { Separator } from "@/components/ui/separator";
+// import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { useApiContext } from "@/contexts/api-context";
 import { Problem, ProblemComponent, FundamentalTruth, CreateComponentRequest, CreateFundamentalTruthRequest } from "@/types/api";
@@ -306,7 +305,7 @@ export default function DecomposeProblemPage({ params }: { params: { id: string 
         <div className="text-center p-12 border rounded-lg bg-white">
           <h3 className="font-medium text-lg mb-2">Problem not found</h3>
           <p className="text-muted-foreground mb-6">
-            The problem you're looking for doesn't exist or you don't have access to it.
+            The problem you&apos;re looking for doesn&apos;t exist or you don&apos;t have access to it.
           </p>
           <Link href="/problems">
             <Button variant="outline">Go Back to Problems</Button>

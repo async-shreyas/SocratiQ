@@ -14,7 +14,7 @@ const componentSchema = z.object({
 // Get a specific component
 export async function GET(
   req: NextRequest,
-  { params }: { params: { problemId: string, id: string } }
+  { params }: { params: { problemId: string, componentId: string } }
 ) {
   try {
     const { userId } = await auth();
@@ -47,7 +47,7 @@ export async function GET(
 
     const component = await prisma.problemComponent.findFirst({
       where: {
-        id: params.id,
+        id: params.componentId,
         problemId: params.problemId
       }
     });
@@ -72,7 +72,7 @@ export async function GET(
 // Update a component
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { problemId: string, id: string } }
+  { params }: { params: { problemId: string, componentId: string } }
 ) {
   try {
     const { userId } = await auth();
@@ -106,7 +106,7 @@ export async function PATCH(
     // Check if component exists
     const existingComponent = await prisma.problemComponent.findFirst({
       where: {
-        id: params.id,
+        id: params.componentId,
         problemId: params.problemId
       }
     });
@@ -129,7 +129,7 @@ export async function PATCH(
     }
 
     const updatedComponent = await prisma.problemComponent.update({
-      where: { id: params.id },
+      where: { id: params.componentId },
       data: validation.data
     });
 
@@ -146,7 +146,7 @@ export async function PATCH(
 // Delete a component
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { problemId: string, id: string } }
+  { params }: { params: { problemId: string, componentId: string } }
 ) {
   try {
     const { userId } = await auth();
@@ -180,7 +180,7 @@ export async function DELETE(
     // Check if component exists
     const existingComponent = await prisma.problemComponent.findFirst({
       where: {
-        id: params.id,
+        id: params.componentId,
         problemId: params.problemId
       }
     });
@@ -193,7 +193,7 @@ export async function DELETE(
     }
 
     await prisma.problemComponent.delete({
-      where: { id: params.id }
+      where: { id: params.componentId }
     });
 
     // Update problem progress

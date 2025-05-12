@@ -31,15 +31,15 @@ export async function GET(req: NextRequest) {
     });
 
     // Get problems created in the past month
-    const recentProblems = problems.filter(
-      (problem) => new Date(problem.createdAt) >= oneMonthAgo
-    );
+    // const recentProblems = problems.filter(
+    //   (problem) => new Date(problem.createdAt) >= oneMonthAgo
+    // );
 
     // Get category count
     const categories = problems.reduce((acc, problem) => {
       acc[problem.category] = (acc[problem.category] || 0) + 1;
       return acc;
-    }, {});
+    }, {} as Record<string, number>);
 
     // Calculate average solution time for completed problems
     const completedProblems = problems.filter(
@@ -58,9 +58,9 @@ export async function GET(req: NextRequest) {
     }
 
     // Calculate stats from the previous month for comparison
-    const previousMonthCompletedCount = completedProblems.filter(
-      (problem) => new Date(problem.updatedAt) >= oneMonthAgo
-    ).length;
+    // const previousMonthCompletedCount = completedProblems.filter(
+    //   (problem) => new Date(problem.updatedAt) >= oneMonthAgo
+    // ).length;
 
     // Count problems by status
     const totalProblems = problems.length;

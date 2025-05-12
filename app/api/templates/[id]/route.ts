@@ -116,10 +116,7 @@ export async function PATCH(
     // Prepare the data for update
     const updateData = { ...validation.data };
     
-    // Convert steps array to JSON if present
-    if (updateData.steps) {
-      updateData.steps = JSON.stringify(updateData.steps);
-    }
+    // Steps array is already in the correct format, no conversion needed
 
     const updatedTemplate = await prisma.template.update({
       where: { id: params.id },
