@@ -10,9 +10,13 @@ const isPublicRoute = createRouteMatcher([
   '/methodology'        // Public methodology page
 ])
 
-export default clerkMiddleware((auth, req) => {
+export default clerkMiddleware(async (auth, req) => {
+  // const { userId } = await auth()
   if (!isPublicRoute(req)) {
     auth.protect();
+    // if (userId) {
+    //   await syncUser(userId);
+    // }
   }
   
   return NextResponse.next();

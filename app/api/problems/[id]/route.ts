@@ -21,10 +21,11 @@ export async function GET(
         { status: 401 }
       );
     }
+    const id = params.id;
 
     const problem = await prisma.problem.findUnique({
       where: { 
-        id: params.id,
+        id,
         userId
       },
       include: {

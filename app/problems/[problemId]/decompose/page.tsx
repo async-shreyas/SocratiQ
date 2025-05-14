@@ -30,8 +30,8 @@ interface TempTruth extends CreateFundamentalTruthRequest {
   tempId: string;
 }
 
-export default function DecomposeProblemPage({ params }: { params: { id: string } }) {
-  const problemId = params.id;
+export default function DecomposeProblemPage({ params }: { params: { problemId: string } }) {
+  const problemId = params.problemId;
   const { api } = useApiContext();
   const router = useRouter();
   

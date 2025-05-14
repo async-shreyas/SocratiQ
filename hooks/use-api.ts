@@ -23,7 +23,7 @@ interface ApiHook {
   error: ApiError | null;
   // Problems
   fetchProblems: () => Promise<Problem[]>;
-  fetchProblem: (id: string) => Promise<Problem>;
+  fetchProblem: (problemId: string) => Promise<Problem>;
   createProblem: (data: CreateProblemRequest) => Promise<Problem>;
   updateProblem: (id: string, data: UpdateProblemRequest) => Promise<Problem>;
   deleteProblem: (id: string) => Promise<{ success: boolean }>;
@@ -99,8 +99,8 @@ export const useApi = (): ApiHook => {
     fetch('/api/problems')
   );
 
-  const fetchProblem = (id: string) => handleRequest<Problem>(() => 
-    fetch(`/api/problems/${id}`)
+  const fetchProblem = (problemId: string) => handleRequest<Problem>(() => 
+    fetch(`/api/problems/${problemId}`)
   );
 
   const createProblem = (data: CreateProblemRequest) => handleRequest<Problem>(() => 

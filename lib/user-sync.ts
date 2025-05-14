@@ -1,9 +1,9 @@
 // lib/user-sync.ts
-import { auth, currentUser } from '@clerk/nextjs/server';
+import {  currentUser } from '@clerk/nextjs/server';
 import prisma from '@/lib/prisma';
 
-export async function syncUser() {
-  const { userId } = await auth();
+export async function syncUser(userId: string) {
+  // const { userId } = await auth();
   
   if (!userId) {
     return null;
