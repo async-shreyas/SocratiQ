@@ -15,18 +15,18 @@ export async function GET(
 ) {
   try {
     const { userId } = await auth();
-    
+    const { id } = params;
     if (!userId) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
       );
     }
-
+    
     // Verify problem exists and belongs to user
     const problem = await prisma.problem.findUnique({
       where: { 
-        id: params.id,
+        id,
         userId
       }
     });
@@ -39,7 +39,7 @@ export async function GET(
     }
 
     const components = await prisma.problemComponent.findMany({
-      where: { problemId: params.id },
+      where: { problemId: id },
       orderBy: { createdAt: 'asc' }
     });
 

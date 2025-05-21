@@ -15,6 +15,7 @@ export async function GET(
 ) {
   try {
     const { userId } = await auth();
+    const { id, solutionId } = params;
     
     if (!userId) {
       return NextResponse.json(
@@ -26,7 +27,7 @@ export async function GET(
     // Verify problem exists and belongs to user
     const problem = await prisma.problem.findUnique({
       where: { 
-        id: params.id,
+        id,
         userId
       }
     });
@@ -40,8 +41,8 @@ export async function GET(
 
     const solution = await prisma.solution.findFirst({
       where: {
-        id: params.solutionId,
-        problemId: params.id
+        id: solutionId,
+        problemId: id
       }
     });
 
@@ -68,6 +69,7 @@ export async function PATCH(
 ) {
   try {
     const { userId } = await auth();
+    const { id, solutionId } = params;
     
     if (!userId) {
       return NextResponse.json(
@@ -79,7 +81,7 @@ export async function PATCH(
     // Verify problem exists and belongs to user
     const problem = await prisma.problem.findUnique({
       where: { 
-        id: params.id,
+        id,
         userId
       }
     });
@@ -94,8 +96,8 @@ export async function PATCH(
     // Check if solution exists
     const existingSolution = await prisma.solution.findFirst({
       where: {
-        id: params.solutionId,
-        problemId: params.id
+        id: solutionId,
+        problemId: id
       }
     });
 
@@ -117,7 +119,7 @@ export async function PATCH(
     }
 
     const updatedSolution = await prisma.solution.update({
-      where: { id: params.solutionId },
+      where: { id: solutionId },
       data: validation.data
     });
 
@@ -137,6 +139,7 @@ export async function DELETE(
 ) {
   try {
     const { userId } = await auth();
+    const { id, solutionId } = params;
     
     if (!userId) {
       return NextResponse.json(
@@ -148,7 +151,7 @@ export async function DELETE(
     // Verify problem exists and belongs to user
     const problem = await prisma.problem.findUnique({
       where: { 
-        id: params.id,
+        id,
         userId
       }
     });
@@ -163,8 +166,8 @@ export async function DELETE(
     // Check if solution exists
     const existingSolution = await prisma.solution.findFirst({
       where: {
-        id: params.solutionId,
-        problemId: params.id
+        id: solutionId,
+        problemId: id
       }
     });
 
@@ -176,7 +179,7 @@ export async function DELETE(
     }
 
     await prisma.solution.delete({
-      where: { id: params.solutionId }
+      where: { id: solutionId }
     });
 
     // Update problem progress

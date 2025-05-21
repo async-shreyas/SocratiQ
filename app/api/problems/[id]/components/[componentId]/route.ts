@@ -15,6 +15,7 @@ export async function GET(
 ) {
   try {
     const { userId } = await auth();
+    const { id, componentId } = params;
     
     if (!userId) {
       return NextResponse.json(
@@ -26,7 +27,7 @@ export async function GET(
     // Verify problem exists and belongs to user
     const problem = await prisma.problem.findUnique({
       where: { 
-        id: params.id,
+        id,
         userId
       }
     });
@@ -40,8 +41,8 @@ export async function GET(
 
     const component = await prisma.problemComponent.findFirst({
       where: {
-        id: params.componentId,
-        problemId: params.id
+        id: componentId,
+        problemId: id
       }
     });
 
@@ -68,6 +69,7 @@ export async function PATCH(
 ) {
   try {
     const { userId } = await auth();
+    const { id, componentId } = params;
     
     if (!userId) {
       return NextResponse.json(
@@ -79,7 +81,7 @@ export async function PATCH(
     // Verify problem exists and belongs to user
     const problem = await prisma.problem.findUnique({
       where: { 
-        id: params.id,
+        id,
         userId
       }
     });
@@ -94,8 +96,8 @@ export async function PATCH(
     // Check if component exists
     const existingComponent = await prisma.problemComponent.findFirst({
       where: {
-        id: params.componentId,
-        problemId: params.id
+        id: componentId,
+        problemId: id
       }
     });
 
@@ -117,7 +119,7 @@ export async function PATCH(
     }
 
     const updatedComponent = await prisma.problemComponent.update({
-      where: { id: params.componentId },
+      where: { id: componentId },
       data: validation.data
     });
 
@@ -137,6 +139,7 @@ export async function DELETE(
 ) {
   try {
     const { userId } = await auth();
+    const { id, componentId } = params;
     
     if (!userId) {
       return NextResponse.json(
@@ -148,7 +151,7 @@ export async function DELETE(
     // Verify problem exists and belongs to user
     const problem = await prisma.problem.findUnique({
       where: { 
-        id: params.id,
+        id,
         userId
       }
     });
@@ -163,8 +166,8 @@ export async function DELETE(
     // Check if component exists
     const existingComponent = await prisma.problemComponent.findFirst({
       where: {
-        id: params.componentId,
-        problemId: params.id
+        id: componentId,
+        problemId: id
       }
     });
 
@@ -176,11 +179,11 @@ export async function DELETE(
     }
 
     await prisma.problemComponent.delete({
-      where: { id: params.componentId }
+      where: { id: componentId }
     });
 
     // Update problem progress
-    await updateProblemProgress(params.id);
+    await updateProblemProgress(id);
 
     return NextResponse.json({ success: true });
   } catch (error) {

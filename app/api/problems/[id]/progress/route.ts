@@ -22,6 +22,7 @@ export async function GET(
 ) {
   try {
     const { userId } = await auth();
+    const { id } = params;
     
     if (!userId) {
       return NextResponse.json(
@@ -33,7 +34,7 @@ export async function GET(
     // Verify problem exists and belongs to user
     const problem = await prisma.problem.findUnique({
       where: { 
-        id: params.id,
+        id,
         userId
       }
     });
@@ -64,6 +65,7 @@ export async function PATCH(
 ) {
   try {
     const { userId } = await auth();
+    const { id } = params;
     
     if (!userId) {
       return NextResponse.json(
@@ -75,7 +77,7 @@ export async function PATCH(
     // Verify problem exists and belongs to user
     const problem = await prisma.problem.findUnique({
       where: { 
-        id: params.id,
+        id,
         userId
       }
     });
@@ -118,7 +120,7 @@ export async function PATCH(
 
     // Update the problem
     const updatedProblem = await prisma.problem.update({
-      where: { id: params.id },
+      where: { id },
       data: updateData
     });
 
@@ -141,6 +143,7 @@ export async function POST(
 ) {
   try {
     const { userId } = await auth();
+    const { id } = params;
     
     if (!userId) {
       return NextResponse.json(
@@ -152,7 +155,7 @@ export async function POST(
     // Verify problem exists and belongs to user
     const problem = await prisma.problem.findUnique({
       where: { 
-        id: params.id,
+        id,
         userId
       }
     });
@@ -165,11 +168,11 @@ export async function POST(
     }
 
     // Calculate and update progress
-    await updateProblemProgress(params.id);
+    await updateProblemProgress(id);
 
     // Get the updated problem
     const updatedProblem = await prisma.problem.findUnique({
-      where: { id: params.id }
+      where: { id }
     });
 
     return NextResponse.json({

@@ -15,13 +15,14 @@ export async function GET(
   try {
     const { userId } = await auth();
     
+    
     if (!userId) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
       );
     }
-    const id = params.id;
+    const { id } = params;
 
     const problem = await prisma.problem.findUnique({
       where: { 
@@ -58,6 +59,7 @@ export async function PATCH(
 ) {
   try {
     const { userId } = await auth();
+    const { id } = params;
     
     if (!userId) {
       return NextResponse.json(
@@ -69,7 +71,7 @@ export async function PATCH(
     // Check if problem exists and belongs to user
     const existingProblem = await prisma.problem.findUnique({
       where: {
-        id: params.id,
+        id,
         userId
       }
     });
@@ -92,7 +94,7 @@ export async function PATCH(
     }
 
     const updatedProblem = await prisma.problem.update({
-      where: { id: params.id },
+      where: { id },
       data: validation.data,
       include: {
         components: true,
@@ -117,6 +119,7 @@ export async function DELETE(
 ) {
   try {
     const { userId } = await auth();
+    const { id } = params;
     
     if (!userId) {
       return NextResponse.json(
@@ -128,7 +131,7 @@ export async function DELETE(
     // Check if problem exists and belongs to user
     const existingProblem = await prisma.problem.findUnique({
       where: {
-        id: params.id,
+        id,
         userId
       }
     });

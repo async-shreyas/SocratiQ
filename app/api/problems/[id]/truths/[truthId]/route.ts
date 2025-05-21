@@ -15,6 +15,8 @@ export async function GET(
 ) {
   try {
     const { userId } = await auth();
+    const { id, truthId } = params;
+
     
     if (!userId) {
       return NextResponse.json(
@@ -26,7 +28,7 @@ export async function GET(
     // Verify problem exists and belongs to user
     const problem = await prisma.problem.findUnique({
       where: { 
-        id: params.id,
+        id,
         userId
       }
     });
@@ -40,8 +42,8 @@ export async function GET(
 
     const truth = await prisma.fundamentalTruth.findFirst({
       where: {
-        id: params.truthId,
-        problemId: params.id
+        id: truthId,
+        problemId: id
       }
     });
 
@@ -68,6 +70,7 @@ export async function PATCH(
 ) {
   try {
     const { userId } = await auth();
+    const { id, truthId } = params;
     
     if (!userId) {
       return NextResponse.json(
@@ -79,7 +82,7 @@ export async function PATCH(
     // Verify problem exists and belongs to user
     const problem = await prisma.problem.findUnique({
       where: { 
-        id: params.id,
+        id,
         userId
       }
     });
@@ -94,8 +97,8 @@ export async function PATCH(
     // Check if truth exists
     const existingTruth = await prisma.fundamentalTruth.findFirst({
       where: {
-        id: params.truthId,
-        problemId: params.id
+        id: truthId,
+        problemId: id
       }
     });
 
@@ -117,7 +120,7 @@ export async function PATCH(
     }
 
     const updatedTruth = await prisma.fundamentalTruth.update({
-      where: { id: params.truthId },
+      where: { id: truthId },
       data: validation.data
     });
 
@@ -137,6 +140,7 @@ export async function DELETE(
 ) {
   try {
     const { userId } = await auth();
+    const { id, truthId } = params;
     
     if (!userId) {
       return NextResponse.json(
@@ -148,7 +152,7 @@ export async function DELETE(
     // Verify problem exists and belongs to user
     const problem = await prisma.problem.findUnique({
       where: { 
-        id: params.id,
+        id,
         userId
       }
     });
@@ -163,8 +167,8 @@ export async function DELETE(
     // Check if truth exists
     const existingTruth = await prisma.fundamentalTruth.findFirst({
       where: {
-        id: params.truthId,
-        problemId: params.id
+        id: truthId,
+        problemId: id
       }
     });
 
@@ -176,11 +180,11 @@ export async function DELETE(
     }
 
     await prisma.fundamentalTruth.delete({
-      where: { id: params.truthId }
+      where: { id: truthId }
     });
 
     // Update problem progress
-    await updateProblemProgress(params.id);
+    await updateProblemProgress(id);
 
     return NextResponse.json({ success: true });
   } catch (error) {

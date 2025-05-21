@@ -25,8 +25,9 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
+    const {id} = params;
     const template = await prisma.template.findUnique({
-      where: { id: params.id }
+      where: { id }
     });
 
     if (!template) {
@@ -50,7 +51,7 @@ export async function GET(
 
     // Increment the popularity count when a template is viewed
     await prisma.template.update({
-      where: { id: params.id },
+      where: { id },
       data: { popularity: { increment: 1 } }
     });
 
@@ -70,6 +71,7 @@ export async function PATCH(
 ) {
   try {
     const { userId } = await auth();
+    const { id } = params;
     
     if (!userId) {
       return NextResponse.json(
@@ -80,7 +82,7 @@ export async function PATCH(
 
     // Check if template exists and belongs to user
     const existingTemplate = await prisma.template.findUnique({
-      where: { id: params.id }
+      where: { id }
     });
 
     if (!existingTemplate) {
@@ -124,7 +126,7 @@ export async function PATCH(
     }
 
     const updatedTemplate = await prisma.template.update({
-      where: { id: params.id },
+      where: { id },
       data: updateData
     });
 
@@ -144,6 +146,7 @@ export async function DELETE(
 ) {
   try {
     const { userId } = await auth();
+    const { id } = params;
     
     if (!userId) {
       return NextResponse.json(
@@ -154,7 +157,7 @@ export async function DELETE(
 
     // Check if template exists and belongs to user
     const existingTemplate = await prisma.template.findUnique({
-      where: { id: params.id }
+      where: { id }
     });
 
     if (!existingTemplate) {
@@ -181,7 +184,7 @@ export async function DELETE(
 
     // Make sure there are no problems using this template
     const problemsUsingTemplate = await prisma.problem.count({
-      where: { templateId: params.id }
+      where: { templateId: id }
     });
 
     if (problemsUsingTemplate > 0) {
@@ -192,7 +195,7 @@ export async function DELETE(
     }
 
     await prisma.template.delete({
-      where: { id: params.id }
+      where: { id }
     });
 
     return NextResponse.json({ success: true });
